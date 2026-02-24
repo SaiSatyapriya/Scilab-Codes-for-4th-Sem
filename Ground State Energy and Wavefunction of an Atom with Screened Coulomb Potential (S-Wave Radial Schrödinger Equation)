@@ -1,0 +1,38 @@
+clear; clc; clf;
+E_col = 14.402;        // e²/(4πϵ₀) = 14.402 eV·Å , Coulomb potential
+hc = 1973;         
+mc2 = 0.511e6;   //electron rest energy  
+h2_2m = (hc^2)/(2*mc2);  // appears in kinetic energy operator of Schrödinger equation
+a = input("The value of a is - ");  // screening length (Å) that controls how fast the potential decreases
+rmax = 20;      // maximum radius (Å)
+N = 1000;       // number of grid points
+h = rmax/(N+1);  // step size (grid spacing)
+r = (1:N)' * h; // column vector of radial positions  r(i) = i*h
+v = -E_col ./ r .* exp(-r/a);  // screened Coulomb (Yukawa) potential V(r) = -(14.402/r) * exp(-r/a)
+b = -h2_2m/(h^2);   // off-diagonal coefficient that represents kinetic energy coupling between neighboring points
+diag_main = 2*h2_2m/(h^2) + v;  // main diagonal elements( kinetic term + potential term)
+H = diag(diag_main) + diag(b*ones(N-1,1),1) + diag(b*ones(N-1,1),-1)
+// builds tridiagonal Hamiltonian matrix
+[psi, E] = spec(H);// psi → eigenvectors (wavefunctions)
+// E   → eigenvalues matrix (energies)
+Evals = diag(E);    
+// extract energy values into a vector
+[E0, idx] = min(Evals);  
+// find lowest energy (ground state energy)
+psi0 = psi(:, idx);      
+// corresponding ground state wavefunction
+
+if psi0(1) < 0 then
+    psi0 = -psi0;
+end
+// wavefunction sign is arbitrary
+// this makes it positive near origin
+
+norm = sqrt(sum(psi0.^2) * h);  // normalization factor that ensures ∫|ψ|² dr = 1
+psi0 = psi0 / norm;    
+// normalized wavefunction
+disp("Ground state energy ="+ string(E0)+string("eV"));
+plot(r, psi0);
+xgrid(1,1,1);
+xlabel("r");
+ylabel("ψ(r)")
