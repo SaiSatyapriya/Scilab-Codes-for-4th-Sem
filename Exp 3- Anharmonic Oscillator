@@ -1,0 +1,50 @@
+clear; clc; clf;   
+
+hc = 197.3;         
+m = 940;  
+k = 100; 
+b = 30;
+
+A = (hc^2) / (2*m);
+
+rmax = 8;      
+N = 500;       
+h = rmax / (N+1);  
+r = (1:N)' * h; 
+
+v = k*r.^2/2 + b*r.^3/3;
+H = zeros(N,N);
+
+for i = 1:N
+    
+    H(i,i) = 2*A/(h^2) + v(i);
+    
+    if i > 1 then 
+        H(i,i-1) = -A/(h^2);
+    end
+    
+    if i < N then 
+        H(i,i+1) = -A/(h^2);
+    end
+   
+end
+
+[psi, E] = spec(H);
+Evalues = diag(E); 
+E0 = min(Evalues); 
+
+for i = 1:N
+    if Evalues(i) == E0 then
+        psi0 = psi(:,i);
+        break
+    end
+end
+ 
+norm = sqrt(sum(psi0.^2) * h); 
+psi0 = psi0 / norm; 
+
+disp("Ground state energy = " + string(E0) + " eV"); 
+plot(r, abs(psi0));
+xgrid(1,1,1);
+xlabel("r");
+ylabel("ψ(r)");
