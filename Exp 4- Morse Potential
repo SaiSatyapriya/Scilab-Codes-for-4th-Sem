@@ -1,86 +1,51 @@
-clc;
-clear;
-clf;
+clc;clear;clf;
 
-// ----------------------
-// 1. Constants
-// ----------------------
-hc = 1973;          // ħc in eV·Å
-m = 940e6;          // reduced mass in eV/c^2
-
-D = 0.755501;       // eV
-alpha = 1.44;       // 1/Å
-r0 = 0.131349;      // Å
-
-// ħ² / (2m)
+hc = 1973;          
+m = 940e6;         
+D = 0.755501;       
+alpha = 1.44;       
+r0 = 0.131349;   
 A = (hc^2)/(2*m);
 
-// ----------------------
-// 2. Radial grid
-// ----------------------
+
 rmin = 0;
-rmax = 5;           // Å
+rmax = 5;           
 N = 600;
 
 h = (rmax - rmin)/(N+1);
 r = (1:N)*h;
 
-// ----------------------
-// 3. Morse potential
-// ----------------------
+
 x = r - r0;
 V = D*(exp(-2*alpha*x) - 2*exp(-alpha*x));
 
-// ----------------------
-// 4. Hamiltonian matrix
-// ----------------------
 H = zeros(N,N);
 
 for i = 1:N
 
-    // main diagonal
     H(i,i) = 2*A/(h^2) + V(i);
 
-    // lower diagonal
     if i > 1 then
         H(i,i-1) = -A/(h^2);
     end
 
-    // upper diagonal
     if i < N then
         H(i,i+1) = -A/(h^2);
     end
 
 end
 
-// ----------------------
-// 5. Eigenvalue problem
-// ----------------------
 [psi,E] = spec(H);
-
 Evalues = diag(E);
-
-// ground state energy
 [E0, idx] = min(Evalues);
 
-// corresponding wavefunction
 psi0 = psi(:,idx);
-
-// ----------------------
-// 6. Normalize
-// ----------------------
 norm = sqrt(sum(psi0.^2)*h);
 psi0 = psi0 / norm;
 
-// ----------------------
-// 7. Output
-// ----------------------
+
 disp("Lowest vibrational energy (eV) = ");
 disp(E0);
-
-// ----------------------
-// 8. Plot
-// ----------------------
 subplot(2,1,1)
 plot(r, psi0)
 xlabel("r (Å)")
